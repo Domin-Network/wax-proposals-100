@@ -1,0 +1,4 @@
+node_modules/
+.env
+.env.wax-grant-100
+.emulator.mock

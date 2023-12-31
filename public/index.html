@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html>
+<script src='waxjs.js'></script>
+<script src='anchor.js'></script>
+<!-- <script src="https://unpkg.com/anchor-link@3"></script>
+<script src="https://unpkg.com/anchor-link-browser-transport@3"></script> -->
+
+<body>
+  Below is a basic example of WaxJS functionality. To use this demo, click WAX Login (if you're not automatically logged
+  in), then click Sign Transaction.
+
+  <strong>Auto-login Feature</strong>
+  <p>If your blockchain information displays below, you're automatically logged in to WaxJS, and you don't need to click
+    WAX Login. This eliminates the need for multiple clicks and popups!</p>
+  <p style="color:#ef9d47" id="autologin"></p>
+
+  <strong>WAX Login</strong>
+  <p>Use this if you're not automatically logged in. Note that if you are auto-logged in, clicking this does not open a
+    popup and the userAccount is still returned.</p>
+  <button id="login" onclick=login()>WAX Login</button>
+  <p style="color:#ef9d47" id="loginresponse"></p>
+  <p>&amp;nbsp;</p>
+  <strong>Sign Transaction with Cloud Wallet</strong>
+  <p>Click once you're logged in.</p>
+  <button id="signLogin" onclick=signLogin()>Sign Login Transaction</button>
+  <button id="signRedeemWithMark" onclick=signRedeemWithMark()>Sign redeem with mark transaction</button>
+  <p></p>
+  <strong>Sign Transaction with Anchor</strong>
+  <p></p>
+  <button onclick=loginWithAnchor()>Login with Anchor</button>
+  <button onclick=signLoginWithAnchor()>Sign Login Transaction</button>
+  <button onclick=signTransactionWithAnchor()>Sign redeem with mark transaction</button>
+  <button onclick=signTransferTransactionWithAnchor()>Sign redeem with transfer transaction</button>
+  <pre><code id="response">Transaction Response
+</code></pre>
+
+
+
+  <script>
+    const campaignId = 'PnmVdpsfveqNtVxicq8K';
+    const collectionName = 'redreamerlab';
+    const assetId = 1099546853314;
+    const transferTo = 'archieiswell';
+    const nonce = 'j5R8J92Uqx3Dpy8WuC2e';
+
+    const wax = new waxjs.WaxJS({
+      rpcEndpoint: 'https://wax.greymass.com'
+    });
+
+    //automatically check for credentials
+    autoLogin();
+
+
+    //checks if autologin is available 
+    async function autoLogin() {
+      let isAutoLoginAvailable = await wax.isAutoLoginAvailable();
+      if (isAutoLoginAvailable) {
+        let userAccount = wax.userAccount;
+        let pubKeys = wax.pubKeys;
+        let str = 'AutoLogin enabled for account: ' + userAccount + '<br/>Active: ' + pubKeys[0] + '<br/>Owner: ' + pubKeys[1] + '<br/>';
+        document.getElementById('autologin').insertAdjacentHTML('beforeend', str);
+      } else {
+        document.getElementById('autologin').insertAdjacentHTML('beforeend', 'Not auto-logged in');
+      }
+      await AnchorModule.restoreSession();
+      if (AnchorModule.getAccount()) {
+        const string = `<br/>Anchor logged in<br/>Account: ${AnchorModule.getAccount()}`;
+        document.getElementById('autologin').insertAdjacentHTML('beforeend', string);
+      }
+    }
+
+    //normal login. Triggers a popup for non-whitelisted dapps
+    async function login() {
+      try {
+        //if autologged in, this simply returns the userAccount w/no popup
+        let userAccount = await wax.login();
+        let pubKeys = wax.pubKeys;
+        let str = 'Account: ' + userAccount + '<br/>Active: ' + pubKeys[0] + '<br/>Owner: ' + pubKeys[1]
+        document.getElementById('loginresponse').insertAdjacentHTML('beforeend', str);
+      } catch (e) {
+        document.getElementById('loginresponse').append(e.message);
+      }
+    }
+
+    async function signLogin() {
+      if (!wax.api) {
+        return document.getElementById('response').append('* Login first *');
+      }
+
+      try {
+        const result = await wax.api.transact(
+          generateAuthTransaction(
+            AnchorModule.getAccount(), nonce
+          ), {
+          blocksBehind: 3,
+          expireSeconds: 30,
+          broadcast: false,
+          sign: true
+        });
+        document.getElementById('response').append(JSON.stringify(result, null, 2))
+      } catch (e) {
+        console.error(`ERROR: ${e.message}`);
+        document.getElementById('response').append(e.message);
+      }
+    }
+
+    async function signRedeemWithMark() {
+      if (!wax.api) {
+        return document.getElementById('response').append('* Login first *');
+      }
+
+      try {
+        const result = await wax.api.transact(
+          generateRedeemTransaction(
+            AnchorModule.getAccount(), campaignId, collectionName, assetId, `Redeem a coupon with ${assetId}`
+          ), {
+          blocksBehind: 3,
+          expireSeconds: 30,
+          broadcast: false,
+          sign: true
+        });
+        document.getElementById('response').append(JSON.stringify(result, null, 2))
+      } catch (e) {
+        console.error(`ERROR: ${e.message}`);
+        document.getElementById('response').append(e.message);
+      }
+    }
+
+    async function loginWithAnchor() {
+      return AnchorModule.loginWithAnchor();
+    }
+
+    async function signLoginWithAnchor() {
+      const result = await AnchorModule.signTransactionWithAnchor(
+        generateAuthTransaction(
+          AnchorModule.getAccount(), nonce
+        ),
+        options = {
+          blocksBehind: 3,
+          expireSeconds: 30,
+          broadcast: false,
+          sign: true
+        }
+      )
+      document.getElementById('response').append(JSON.stringify({
+        signatures: result.signatures,
+        serializedTransaction: Array.from(result.resolved.serializedTransaction)
+      }, null, 2))
+    }
+
+    async function signTransactionWithAnchor() {
+      const result = await AnchorModule.signTransactionWithAnchor(
+        generateRedeemTransaction(
+          AnchorModule.getAccount(), campaignId, collectionName, assetId, `Redeem a coupon with ${assetId}`
+        ),
+        options = {
+          blocksBehind: 3,
+          expireSeconds: 30,
+          broadcast: false,
+          sign: true
+        }
+      );
+      document.getElementById('response').append(JSON.stringify({
+        signatures: result.signatures,
+        serializedTransaction: Array.from(result.resolved.serializedTransaction),
+        transactionId: result.processed.id
+      }, null, 2))
+    }
+
+    async function signTransferTransactionWithAnchor() {
+      const result = await AnchorModule.signTransactionWithAnchor(
+        generateRedeemTransaction(
+          AnchorModule.getAccount(), campaignId, collectionName, assetId, `Redeem a coupon with ${assetId}`, transferTo
+        ),
+        options = {
+          blocksBehind: 3,
+          expireSeconds: 30,
+          broadcast: true,
+          sign: true
+        }
+      );
+      document.getElementById('response').append(JSON.stringify({
+        signatures: result.signatures,
+        serializedTransaction: Array.from(result.resolved.serializedTransaction),
+        transactionId: result.processed.id
+      }, null, 2))
+    }
+
+    function generateRedeemTransaction(account, campaign_uuid, collection_name, asset_id, memo, transferTo = null) {
+      let actions = [{
+        account: 'waxchihkaiyu',
+        name: 'redeem',
+        authorization: [{
+          actor: account,
+          permission: 'active',
+        }],
+        data: {
+          from: account,
+          campaign_uuid,
+          collection_name,
+          asset_id,
+          memo
+        },
+      }];
+      if (transferTo) {
+        actions.push({
+          account: 'atomicassets',
+          name: 'transfer',
+          authorization: [{
+            actor: account,
+            permission: 'active',
+          }],
+          data: {
+            from: account,
+            to: transferTo,
+            asset_ids: [asset_id],
+            memo
+          },
+        })
+      }
+      return {
+        actions
+      };
+    }
+
+
+    function generateAuthTransaction(account, nonce, memo) {
+      return {
+        actions: [{
+          account: 'waxchihkaiyu',
+          name: 'login',
+          authorization: [{
+            actor: account,
+            permission: 'active',
+          }],
+          data: {
+            from: account,
+            nonce,
+            memo
+          },
+        }]
+      }
+    }
+
+  </script>
+</body>
+
+</html>
