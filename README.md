@@ -54,5 +54,6 @@ It needs to provide `nonce` as data and the action name should be `auth`.
 Anyone is free to deploy and interact with their own contracts. We also provide a default contract location on both the WAX Mainnet and testnet for immediate use and reference:
 
 - **Contract Address**: `waxchihkaiyu`
+- **Auth Account**: `atomictoolsx`
 
 Feel free to deploy your contracts and experiment with the protocol. 
