@@ -17,7 +17,6 @@ async function fetchNonce(request, response) {
 async function login(request, response) {
     try {
         const loginSchema = Joi.object({
-            from: Joi.string().required(),
             nonce: Joi.string().required(),
         });
         const {

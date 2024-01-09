@@ -39,8 +39,9 @@ To set up and run this project, you will need to provide the following environme
 - `WAX_CHAIN_ID`: The Chain ID of the WAX blockchain.
 - `WAX_RPC_URL`: The URL of the WAX blockchain RPC endpoint.
 - `WAX_AUTH_ACCOUNT`: The WAX account responsible for authentication.
+It needs to provide `nonce` as data and the action name should be `auth`.
 - `WAX_AUTH_ACTION_NAME`: The action name used for authentication.
-- `WAX_REDEEM_ACCOUNT`: The WAX account used for redeeming actions.
+- `WAX_REDEEM_ACCOUNT`: The WAX account is used for redeeming actions.
 - `WAX_REDEEM_ACTION_NAME`: The action name used for redeeming.
 - `JWT_ACCESS_KEY`: Key for JWT access token generation.
 - `JWT_REFRESH_KEY`: Key for JWT refresh token generation.
