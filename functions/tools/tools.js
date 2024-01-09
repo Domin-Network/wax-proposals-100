@@ -69,17 +69,12 @@ async function verifyAction(action, actionAccount, actionName, serializedTransac
         const { error, value } = schema.validate(action.data);
         if (!error) {
             console.log(`Action: ${JSON.stringify(action, null, '\t')}`);
-            const { from } = value;
             const auth = action.authorization[0];
-            if (auth.actor !== from) {
-                console.error(`Invalid actor: ${auth.actor} !== ${from}`);
-                throw new Error('Invalid actor');
-            }
             if (auth.permission !== 'active') {
                 console.error(`Invalid permission: ${auth.permission} !== active`);
                 throw new Error('Invalid permission');
             }
-            const account = await api.rpc.get_account(from);
+            const account = await api.rpc.get_account(auth.actor);
             for (const permission of account.permissions) {
                 if (permission.perm_name === auth.permission) {
                     if (publicKeys.includes(permission.required_auth.keys[0].key)) {

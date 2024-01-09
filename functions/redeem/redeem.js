@@ -37,7 +37,7 @@ async function redeem(request, response) {
             throw error;
         }
         const asset = await fetchAsset(assetId);
-        if (asset.owner !== from || asset.collection.collection_name !== collectionName) {
+        if (asset.collection.collection_name !== collectionName) {
             const error = new Error('Invalid asset');
             error.code = 400;
             throw error;
