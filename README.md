@@ -57,3 +57,7 @@ Anyone is free to deploy and interact with their own contracts. We also provide 
 - **Auth Account**: `atomictoolsx`
 
 Feel free to deploy your contracts and experiment with the protocol. 
+
+# Redeem Center
+
+Based on this [proposal deliverables #2](https://labs.wax.io/proposals/100?tab=deliverables), we will rebuild the Redeem Center.
